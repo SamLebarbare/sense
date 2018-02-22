@@ -4,6 +4,53 @@ import PropTypes from "prop-types";
 import logo from "./logo.svg";
 import "./App.css";
 
+class Potard extends React.PureComponent {
+  render() {
+    return (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="40mm"
+        height="40mm"
+        viewBox="0 0 141.73228 141.73228"
+        id="svg2"
+        transform={`rotate(${-1 * (120 - this.props.value)})`}
+      >
+        <defs id="defs4" />
+        <g id="layer1" transform="translate(0,-910.62991)">
+          <g id="g8079" transform="translate(-94.954339,103.54064)">
+            <g
+              style={{ fill: "#000000", fillOpacity: 1 }}
+              transform="matrix(0.14137034,0,0,0.13631957,124.0442,733.31563)"
+              id="g8072"
+            >
+              <circle
+                style={{ opacity: 0.80699978, fill: "#000000", fillOpacity: 1 }}
+                id="path8070"
+                cx="155.05588"
+                cy="863.97125"
+                r="50"
+              />
+            </g>
+            <g
+              style={{ opacity: 1, fill: "#454837", fillOpacity: 1 }}
+              id="g8075"
+              transform="translate(11.616754,14.647211)"
+            >
+              <circle
+                r="50"
+                cy="863.97125"
+                cx="155.05588"
+                id="circle8077"
+                style={{ opacity: 0.80699978, fill: "#454837", fillOpacity: 1 }}
+              />
+            </g>
+          </g>
+        </g>
+      </svg>
+    );
+  }
+}
+
 class Touch extends React.PureComponent {
   constructor(args) {
     super(...args);
@@ -103,6 +150,9 @@ class Synth extends React.PureComponent {
           <img src={logo} className="App-logo" alt="logo" />
           <h1 className="App-title">SensE</h1>
         </header>
+
+        <Potard value={100} />
+
         <div className="grid">
           {this.props.touchIds.map(k => {
             const ConnectedTouch = connect(state => {
