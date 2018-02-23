@@ -50,6 +50,49 @@ class Potard extends React.PureComponent {
     );
   }
 }
+
+const delay = (ctx, input, options) => {
+  const leftDelay = ctx.createDelay();
+  const rightDelay = ctx.createDelay();
+  const feedback = ctx.createGain();
+  const dryMix = ctx.createGain();
+  const wetMix = ctx.createGain();
+  const output = ctx.createGain();
+  const merger = ctx.createChannelMerger(2);
+
+  if (!options) {
+    options = {
+      time: 3 / 8,
+      feedback: 0.5,
+      wet: 1,
+      dry: 1
+    };
+  }
+
+  leftDelay.delayTime.value = options.time;
+  rightDelay.delayTime.value = options.time;
+
+  feedback.gain.value = options.feedback;
+  dryMix.gain.value = options.dry;
+  wetMix.gain.value = options.wet;
+
+  input.connect(dryMix);
+  input.connect(feedback);
+
+  feedback.connect(leftDelay);
+  leftDelay.connect(rightDelay);
+  rightDelay.connect(feedback);
+
+  leftDelay.connect(merger, 0, 0);
+  rightDelay.connect(merger, 0, 1);
+  merger.connect(wetMix);
+
+  dryMix.connect(output);
+  wetMix.connect(output);
+
+  return output;
+};
+
 const runningOsc = {};
 class Touch extends React.PureComponent {
   constructor(args) {
@@ -85,7 +128,8 @@ class Touch extends React.PureComponent {
     const osc = this.audio.createOscillator();
     osc.type = this.props.type;
     osc.frequency.setValueAtTime(this.note, this.time);
-    osc.connect(this.audio.destination);
+    const delayed = delay(this.audio, osc);
+    delayed.connect(this.props.output);
     return osc;
   }
 
@@ -133,16 +177,16 @@ class Touch extends React.PureComponent {
 
   render() {
     const { order } = this.props;
-    const g = 22 + Number(this.column) * Number(this.row) * 6;
+    const g = Number(this.column) * Number(this.row) * 6;
     const grid = {
       gridColumn: this.column,
       gridRow: this.row,
       userSelect: "none",
-      backgroundColor: `rgba(73, ${g}, 146, 0.200)`
+      backgroundColor: `rgba(${g}, 19, 106, 0.200)`
     };
 
     if (this.props.isPlayingTouch) {
-      grid.backgroundColor = `rgba(73, ${g}, 146, 0.575)`;
+      grid.backgroundColor = `rgba(${g}, 19, 106, 0.575)`;
     }
 
     return (
@@ -170,11 +214,12 @@ class Synth extends React.PureComponent {
     return { audio: this.props.audioCtx };
   }
 
-  componentDidMount() {
+  componentWillMount() {
     this.mainGain = this.props.audioCtx.createGain();
-    this.mainGain.gain.setValueAtTime(0.5, this.props.audioCtx.currentTime);
+    this.mainGain.gain.setValueAtTime(0.2, this.props.audioCtx.currentTime);
     this.mainGain.connect(this.props.audioCtx.destination);
   }
+
   render() {
     const playStyle = {};
     if (this.props.isPlaying) {
@@ -195,7 +240,9 @@ class Synth extends React.PureComponent {
                 isPlaying: state.isPlaying
               };
             })(Touch);
-            return <ConnectedTouch key={k} type="sawtooth" />;
+            return (
+              <ConnectedTouch key={k} type="sawtooth" output={this.mainGain} />
+            );
           })}
         </div>
       </div>

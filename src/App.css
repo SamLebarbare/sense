@@ -5,7 +5,7 @@
 
 .App-logo {
   animation: App-logo-spin 1s ease-in-out infinite alternate;
-  height: 140px;
+  height: 100px;
   top: 400px;
   position: relative;
   z-index: 1;
@@ -26,10 +26,10 @@
 
 @keyframes App-logo-spin {
   from {
-    transform: scale3d(11, 10, -1);
+    transform: scale3d(12, 13, -1);
   }
   to {
-    transform: scale3d(10, 12, -1);
+    transform: scale3d(11, 12, -1);
   }
 }
 
