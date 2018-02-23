@@ -19,11 +19,22 @@ for (let a = 1; a <= 7; a++) {
 
 const initialState = {
   touchIds,
-  touches
+  touches,
+  isPlaying: false
 };
 
 const store = createStore((state = initialState, action) => {
   switch (action.type) {
+    case "START_PLAY": {
+      const newState = Object.assign({}, state);
+      newState.isPlaying = true;
+      return newState;
+    }
+    case "END_PLAY": {
+      const newState = Object.assign({}, state);
+      newState.isPlaying = false;
+      return newState;
+    }
     case "START_PLAY_TOUCH": {
       const newState = Object.assign({}, state);
       newState.touches[action.order].isPlaying = true;

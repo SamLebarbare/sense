@@ -50,11 +50,14 @@ class Potard extends React.PureComponent {
     );
   }
 }
-
+const runningOsc = {};
 class Touch extends React.PureComponent {
   constructor(args) {
     super(...args);
     this.play = this.play.bind(this);
+    this.stop = this.stop.bind(this);
+    this.touch = this.touch.bind(this);
+    this.untouch = this.untouch.bind(this);
   }
 
   get audio() {
@@ -80,7 +83,7 @@ class Touch extends React.PureComponent {
 
   createOsc() {
     const osc = this.audio.createOscillator();
-    osc.type = "square";
+    osc.type = this.props.type;
     osc.frequency.setValueAtTime(this.note, this.time);
     osc.connect(this.audio.destination);
     return osc;
@@ -90,21 +93,41 @@ class Touch extends React.PureComponent {
     audio: PropTypes.object
   };
 
-  play() {
-    if (!this.props.isPlaying) {
-      const osc = this.createOsc();
-      osc.start(this.time);
+  touch() {
+    this.props.dispatch({
+      type: "START_PLAY"
+    });
+    this.play(true);
+  }
+
+  untouch() {
+    this.props.dispatch({
+      type: "END_PLAY"
+    });
+    this.stop();
+  }
+
+  play(force) {
+    if (this.props.isPlaying || force === true) {
       this.props.dispatch({
         type: "START_PLAY_TOUCH",
         order: this.props.order
       });
-      osc.stop(this.time + 1);
-      osc.onended = () => {
+      runningOsc[this.props.order] = this.createOsc();
+      runningOsc[this.props.order].start(this.time);
+    }
+  }
+
+  stop() {
+    if (runningOsc[this.props.order]) {
+      runningOsc[this.props.order].onended = () => {
         this.props.dispatch({
           type: "END_PLAY_TOUCH",
           order: this.props.order
         });
       };
+      runningOsc[this.props.order].stop(this.time);
+      delete runningOsc[this.props.order];
     }
   }
 
@@ -114,14 +137,23 @@ class Touch extends React.PureComponent {
     const grid = {
       gridColumn: this.column,
       gridRow: this.row,
-      backgroundColor: `rgba(20, ${g}, 18, 0.200)`
+      userSelect: "none",
+      backgroundColor: `rgba(73, ${g}, 146, 0.200)`
     };
 
-    if (this.props.isPlaying) {
-      grid.backgroundColor = `rgba(20, ${g}, 18, 0.575)`;
+    if (this.props.isPlayingTouch) {
+      grid.backgroundColor = `rgba(73, ${g}, 146, 0.575)`;
     }
 
-    return <div style={grid} onClick={this.play} />;
+    return (
+      <div
+        style={grid}
+        onMouseDown={this.touch}
+        onMouseEnter={this.play}
+        onMouseUp={this.untouch}
+        onMouseLeave={this.stop}
+      />
+    );
   }
 }
 
@@ -144,22 +176,26 @@ class Synth extends React.PureComponent {
     this.mainGain.connect(this.props.audioCtx.destination);
   }
   render() {
+    const playStyle = {};
+    if (this.props.isPlaying) {
+      playStyle.animation = "neon1 1.5s ease-in-out infinite alternate";
+    }
     return (
       <div className="App">
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">SensE</h1>
         </header>
-
-        <Potard value={100} />
-
-        <div className="grid">
+        <div className="grid" style={playStyle}>
           {this.props.touchIds.map(k => {
             const ConnectedTouch = connect(state => {
               const touch = state.touches[k];
-              return { order: k, isPlaying: touch.isPlaying };
+              return {
+                order: k,
+                isPlayingTouch: touch.isPlaying,
+                isPlaying: state.isPlaying
+              };
             })(Touch);
-            return <ConnectedTouch key={k} />;
+            return <ConnectedTouch key={k} type="sawtooth" />;
           })}
         </div>
       </div>
@@ -168,7 +204,7 @@ class Synth extends React.PureComponent {
 }
 
 const ConnectedSynth = connect(state => {
-  return { touchIds: state.touchIds };
+  return { touchIds: state.touchIds, isPlaying: state.isPlaying };
 })(Synth);
 
 class App extends React.PureComponent {
