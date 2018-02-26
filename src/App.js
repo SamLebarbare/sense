@@ -178,17 +178,21 @@ class Touch extends React.PureComponent {
   render() {
     const { order } = this.props;
     const g = Number(this.column) * Number(this.row) * 6;
+    let transform = "rotate3d(1, 0, 0, 20deg) ";
+    transform += `scale3d(1,1,${this.row * 2}) `;
+    transform += `translate3d(0px, ${-2 + this.row}px, -${10 * this.row}px)`;
     const grid = {
       gridColumn: this.column,
       gridRow: this.row,
       userSelect: "none",
-      backgroundColor: `rgba(${g}, 19, 106, 0.200)`
+      backgroundColor: `rgba(${g}, 19, 106, 0.200)`,
+      transform: transform,
+      transformStyle: "preserve-3d"
     };
 
     if (this.props.isPlayingTouch) {
       grid.backgroundColor = `rgba(${g}, 19, 106, 0.575)`;
     }
-
     return (
       <div
         style={grid}
@@ -223,7 +227,7 @@ class Synth extends React.PureComponent {
   render() {
     const playStyle = {};
     if (this.props.isPlaying) {
-      playStyle.animation = "neon1 1.5s ease-in-out infinite alternate";
+      //playStyle.animation = "neon1 1.5s ease-in-out infinite alternate";
     }
     return (
       <div className="App">

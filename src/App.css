@@ -8,7 +8,7 @@
   height: 100px;
   top: 400px;
   position: relative;
-  z-index: 1;
+  z-index: -100;
 }
 
 .App-header {
@@ -26,20 +26,20 @@
 
 @keyframes App-logo-spin {
   from {
-    transform: scale3d(12, 13, -1);
+    transform: scale3d(1, 1, -1);
   }
   to {
-    transform: scale3d(11, 12, -1);
+    transform: scale3d(1, 1, -1);
   }
 }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  grid-gap: 10px;
-  grid-auto-rows: minmax(100px, auto);
-  position: relative;
-  z-index: 2;
+  grid-gap: 40px;
+  grid-auto-rows: minmax(100px, 140px);
+  perspective: 500px;
+  overflow: hidden;
 }
 
 .grid > div {
